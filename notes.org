@@ -1,0 +1,13 @@
+* Stability
+[[https://arxiv.org/pdf/2310.00429.pdf][Stability paper]]
+
+** Experiments
+1. [ ] Train VAE model on CIFAR10 data.
+2. [ ] Save model and optimizer checkpoint as original
+3. [ ] Generate 10K examples
+4. [ ] Compute FID, precision and recall for the current model
+5. [ ] For N iterations, do :
+   1. [ ] synth = Generate \lambda*|Train set| new images.
+   2. [ ] Train on (training set \Union synt) 
+   3. [ ] Compute FID, precision and recall for the current model
+
