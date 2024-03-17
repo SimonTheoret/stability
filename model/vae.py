@@ -76,6 +76,8 @@ class Vae(BaseVAE):
             nn.LeakyReLU(),
             nn.Conv2d(hidden_dims[-1], out_channels=3, kernel_size=3, padding=1),
             nn.Tanh(),
+            nn.Flatten(start_dim = 2, end_dim=-1),
+            nn.Linear(in_features=4096, out_features=1024)
         )
 
     def encode(self, input: Tensor) -> List[Tensor]:
@@ -106,7 +108,7 @@ class Vae(BaseVAE):
         result = result.view(-1, 512, 2, 2)
         result = self.decoder(result)
         result = self.final_layer(result)
-        return result
+        return result.view(-1,32,32)
 
     def reparameterize(self, mu: Tensor, logvar: Tensor) -> Tensor:
         """
@@ -142,7 +144,7 @@ class Vae(BaseVAE):
         z = torch.randn(num_samples, self.latent_dim).to(device)
 
 
-        samples = self.decode(z)
+        samples = self.decode(z).to(device)
         return samples
 
     def generate(self, x: Tensor, **kwargs) -> Tensor:

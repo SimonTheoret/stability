@@ -97,7 +97,7 @@ class Trainer:
             cv2.imwrite(f"./images/img{i}.png", img) # danger
 
 def main():
-    trainer = Trainer(in_channels=3, latent_dim=64, hidden_dims=None, pretrain_num_epochs=1000, batch_size=64, learning_rate=1e-4)
+    trainer = Trainer(in_channels=3, latent_dim=64, hidden_dims=None, pretrain_num_epochs=500, batch_size=64, learning_rate=1e-4)
     model = trainer.pretrain_CIFAR10()
     trainer.make_n_img(model, 10)
 
