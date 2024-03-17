@@ -1,4 +1,3 @@
-
 from typing import Optional
 from model.vae import Vae
 from torch.utils.data import DataLoader
@@ -8,6 +7,8 @@ import torchvision.datasets as tvds
 from dataclasses import dataclass
 import torchvision.transforms as transforms
 import time
+import cv2
+import os
 
 
 @dataclass
@@ -20,6 +21,7 @@ class Trainer:
     learning_rate: float
     datasets: str = "./datasets"
     checkpoint_path: str = "./checkpoints"
+    img_dir: str = "./"
 
     def pretrain_CIFAR10(
         self,
@@ -50,11 +52,12 @@ class Trainer:
         optimizer = Adam(model.parameters(), lr=self.learning_rate)
         # Training
         for epoch in range(self.pretrain_num_epochs):
-            model.cuda()
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            model.to(device)
             model.train()
             train_loss = 0
             for batch_idx, (data, _) in enumerate(train_loader):
-                data = data.cuda()
+                data = data.to(device)
                 optimizer.zero_grad()
                 recon_batch, mu, log_var = model(data)
                 loss = model.loss_function(recon_batch, data, mu, log_var)
@@ -80,11 +83,23 @@ class Trainer:
             },
             self.checkpoint_path + "/original",
         )
+        print(f"duration: {end}")
+        model.eval()
+        return model
 
+    @torch.no_grad()
+    def make_n_img(self, model, num_im: int):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        samples = model.sample(num_im, "").to(device)
+        os.mkdir("./images")
+        for i in range(samples.size()[0]):
+            img = samples[i, :, :, :].cpu().numpy()
+            cv2.imwrite(f"./images/img{i}.png", img) # danger
 
 def main():
-    trainer = Trainer(in_channels=3, latent_dim=64, hidden_dims=None, pretrain_num_epochs=1, batch_size=64, learning_rate=0.005)
-    trainer.pretrain_CIFAR10()
+    trainer = Trainer(in_channels=3, latent_dim=64, hidden_dims=None, pretrain_num_epochs=1000, batch_size=64, learning_rate=1e-4)
+    model = trainer.pretrain_CIFAR10()
+    trainer.make_n_img(model, 10)
 
 if __name__ == "__main__":
     main()

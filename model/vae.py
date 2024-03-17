@@ -138,7 +138,8 @@ class Vae(BaseVAE):
         :param current_device: (Int) Device to run the model
         :return: (Tensor)
         """
-        z = torch.randn(num_samples, self.latent_dim)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        z = torch.randn(num_samples, self.latent_dim).to(device)
 
 
         samples = self.decode(z)
